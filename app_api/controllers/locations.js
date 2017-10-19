@@ -29,8 +29,23 @@ module.exports.locationsDeleteOne = function (req, res) {
 
 /* GET */
 module.exports.locationsReadOne = function (req, res) {
-  // placeholder
-  sendJsonResponse(res, 200, {"status": "success"});
+  // Validate inputs
+  if (!req.params || !req.params.locationid) {
+    sendJsonResponse(res, 404, {"message": "No locationid in request"});
+    return;
+  }
+  // Execute query and return query results
+  Loc.findById(req.params.locationid).exec(function (error, location) {
+    if (!location) {
+      sendJsonResponse(res, 404, {"message": "location not found"});
+      return;
+    }
+    if (error) {
+      sendJsonResponse(res, 404, error);
+      return;
+    }
+    sendJsonResponse(res, 200, location);
+  });  
 };
 
 /* PUT */

@@ -1,13 +1,43 @@
+db.locations.deleteMany({'_id' : ObjectId('59e91d1a4fd55b4ccb2fb678')})
+
 db.locations.update({
   name:'Starbuck\'s'
 }, {
   $push: {
     reviews: {
-      author: 'Adam',
+      author: 'Linda',
       id: ObjectId(),
-      rating: 1,
-      text: 'I have not had good service here.',
-      createdOn: new Date('Oct 15, 2017')
+      rating: 5,
+      text: 'Most of the crew has smiles and warm greetings good coffee great music what can I say I likes my coffee.',
+      createdOn: new Date('Jun 21, 2017')
+    }
+  }
+})
+
+db.locations.update({
+  name:'Cheese Louise'
+}, {
+  $push: {
+    reviews: {
+      author: 'Dlorah',
+      id: ObjectId(),
+      rating: 4,
+      text: 'Great coffee. Great service. Awesome, relaxing environment to hang out and catch up with friends.',
+      createdOn: new Date('Oct 3, 2017')
+    }
+  }
+})
+
+db.locations.update({
+  name:'Fig Tree Coffee'
+}, {
+  $push: {
+    reviews: {
+      author: 'Nicholas',
+      _id: ObjectId(),
+      rating: 4,
+      text: 'Great coffee. Great service. Awesome, relaxing environment to hang out and catch up with friends.',
+      createdOn: new Date('Sep 30, 2017')
     }
   }
 })
