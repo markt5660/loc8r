@@ -1,0 +1,13 @@
+db.locations.update({
+  name:'Starbuck\'s'
+}, {
+  $push: {
+    reviews: {
+      author: 'Adam',
+      id: ObjectId(),
+      rating: 1,
+      text: 'I have not had good service here.',
+      createdOn: new Date('Oct 15, 2017')
+    }
+  }
+})

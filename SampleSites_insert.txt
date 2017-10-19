@@ -1,0 +1,34 @@
+db.locations.save({
+  name: 'Starbuck\'s',
+  address: '415 Roseville Square A, Roseville, CA 95678',
+  rating: 3,
+  facilities: ['Hot Drinks','Hot Sandwiches','Good wifi'],
+  coordinates: [-121.2764058, 38.7448411],
+  hours: [{
+    fromDay: 'Monday',
+    toDay: 'Friday',
+    open: '5:00am',
+    close: '8:30pm'
+  }, {
+    fromDay: 'Saturday',
+    toDay: '',
+    open: '6:00am',
+    close: '8:30pm'
+  }, {
+    fromDay: 'Sunday',
+    toDay: '',
+    open: '6:00am',
+    close: '8:00pm'
+  }],
+  reviews: [{
+    author: 'Linda',
+    rating: 5,
+    text: 'Most of the crew has smiles and warm greetings good coffee great music what can I say I likes my coffee.',
+    createdOn: new Date('Jun 21, 2017')
+  }, {
+    author: 'Lenecia',
+    rating: 3,
+    text: 'service fast. brew was cold',
+    createdOn: new Date('Aug 2, 2017')
+  }]
+})
