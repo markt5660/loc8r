@@ -1,14 +1,20 @@
 var express = require('express');
 var router = express.Router();
 var ctrlLocations = require('../controllers/locations');
-var ctrlOthers = require('../controllers/others');
+var ctrlReviews = require('../controllers/reviews');
 
-/* Location pages */
-router.get('/', ctrlLocations.homelist);
-router.get('/location', ctrlLocations.locationInfo);
-router.get('/location/review/new', ctrlLocations.addReview);
+/* Locations */
+router.get('/locations', ctrlLocations.locationsListByDistance);
 
-/* Other pages */
-router.get('/about', ctrlOthers.about);
+router.post('/locations', ctrlLocations.locationsCreate);
+router.get('/locations/:locationid', ctrlLocations.locationsReadOne);
+router.put('/locations/:locationid', ctrlLocations.locationsUpdateOne);
+router.delete('/locations/:locationid', ctrlLocations.locationsDeleteOne);
+
+/* Reviews */
+router.post('/locations/:locationid/reviews', ctrlReviews.reviewsCreate);
+router.get('/locations/:locationid/reviews/:reviewid', ctrlReviews.reviewsReadOne);
+router.put('/locations/:locationid/reviews/:reviewid', ctrlReviews.reviewsUpdateOne);
+router.delete('/locations/:locationid/reviews/:reviewid', ctrlReviews.reviews.DeleteOne);
 
 module.exports = router;
