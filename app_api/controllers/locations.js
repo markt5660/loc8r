@@ -29,11 +29,31 @@ var theEarth = (function () {
   };
 })();
 
-
 /* POST */
 module.exports.locationsCreate = function (req, res) {
-  // placeholder
-  sendJsonResponse(res, 200, {"status": "success"});
+  Loc.create({
+    name: req.body.name,
+    address: req.body.address,
+    facilities: req.body.facilities.split(","),
+    coords: [parseFloat(req.body.lng), parseFloat(req.body.lat)],
+    hours: [{
+      fromDay: req.body.fromDay1,
+      toDay: req.body.toDay1,
+      open: req.body.open1,
+      close: req.body.close1
+    }, {
+      fromDay: req.body.fromDay2,
+      toDay: req.body.toDay2,
+      open: req.body.open2,
+      close: req.body.close2
+    }],
+  }, function (err, location) {
+    if (err) {
+      sendJsonResponse(res, 400, err);
+    } else {
+      sendJsonResponse(res, 201, location);
+    }
+  });
 };
 
 /* GET list */
@@ -116,25 +136,48 @@ module.exports.locationsListByDistance = function (req, res) {
 
 /* DELETE */
 module.exports.locationsDeleteOne = function (req, res) {
-  // placeholder
-  sendJsonResponse(res, 200, {"status": "success"});
+  // Validate inputs
+  if (!req.params || !req.params.locationid) {
+    sendJsonResponse(res, 404, {"message": "Not found, locationid is required"});
+    return;
+  }
+  // Execute query and delete the result
+  Loc
+  .findById(req.params.locationid)
+  .exec(function (err, location) {
+    if (!location) {
+      sendJsonResponse(res, 404, {"message": "location not found"});
+      return;
+    } else if (err) {
+      sendJsonResponse(res, 400, err);
+      return;
+    }
+    console.log("Deleting", location._id);    
+    location.remove(function (err, location) {
+      if (err) {
+        sendJsonResponse(res, 404, err);
+      } else {
+        sendJsonResponse(res, 200, location);
+      }
+    });
+  });
 };
 
 /* GET */
 module.exports.locationsReadOne = function (req, res) {
   // Validate inputs
   if (!req.params || !req.params.locationid) {
-    sendJsonResponse(res, 404, {"message": "No locationid in request"});
+    sendJsonResponse(res, 404, {"message": "Not found, locationid is required"});
     return;
   }
   // Execute query and return query results
-  Loc.findById(req.params.locationid).exec(function (error, location) {
+  Loc.findById(req.params.locationid)
+  .exec(function (err, location) {
     if (!location) {
       sendJsonResponse(res, 404, {"message": "location not found"});
       return;
-    }
-    if (error) {
-      sendJsonResponse(res, 404, error);
+    } else if (err) {
+      sendJsonResponse(res, 400, err);
       return;
     }
     sendJsonResponse(res, 200, location);
@@ -143,6 +186,44 @@ module.exports.locationsReadOne = function (req, res) {
 
 /* PUT */
 module.exports.locationsUpdateOne = function (req, res) {
-  // placeholder
-  sendJsonResponse(res, 200, {"status": "success"});
+  // Validate inputs
+  if (!req.params || !req.params.locationid) {
+    sendJsonResponse(res, 404, {"message": "Not found, locationid is required"});
+    return;
+  }
+  // Execute the query, apply the changes to the result and save
+  Loc
+  .findById(req.params.locationid)
+  .select('-reviews -rating')
+  .exec(function (err, location) {
+    if (!location) {
+      sendJsonResponse(res, 404, {"message": "location not found"});
+      return;
+    } else if (err) {
+      sendJsonResponse(res, 400, err);
+      return;
+    }
+    location.name = req.body.name;
+    location.address = req.body.address;
+    location.facilities = req.body.facilities.split(",");
+    location.coords = [parseFloat(req.body.lng), parseFloat(req.body.lat)];
+    location.hours = [{
+      fromDay: req.body.fromDay1,
+      toDay: req.body.toDay1,
+      open: req.body.open1,
+      close: req.body.close1
+    }, {
+      fromDay: req.body.fromDay2,
+      toDay: req.body.toDay2,
+      open: req.body.open2,
+      close: req.body.close2
+    }];
+    location.save(function (err, location) {
+      if (err) {
+        sendJsonResponse(res, 404, err);
+      } else {
+        sendJsonResponse(res, 200, location);
+      }
+    });
+  });
 };
