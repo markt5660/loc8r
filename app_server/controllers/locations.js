@@ -1,5 +1,15 @@
-/* GET 'home' page */
-module.exports.homelist = function (req, res) {
+var request = require('request');
+// Set default URL base for API requests
+var apiOptions = {
+  server: "http://localhost:3000"
+};
+// Reset URL base for production environment
+if (process.env.NODE_ENV === 'production') {
+  apiOptions.server = "https://getting-mean-loc8r.herokuapp.com";
+};
+
+/** Helper method for rendering the homepage */
+var renderHomepage = function (req, res, responseBody) {
   res.render('locations-list', {
     title: 'Loc8r - Find places to work with wifi',
     pageHeader: {
@@ -7,29 +17,52 @@ module.exports.homelist = function (req, res) {
       strapLine: 'Find places to work with wifi near you!!'
     },
     sidebar: "Looking for wifi and a seat? Loc8r helps you find places to work when out and about. Perhaps with coffee, cake, or a pint? Let Loc8r help you find the place you're looking for.",
-    locations: [
-      {
-        name: 'Starcups',
-        address: '125 High Street, Reading, RG6 1PS',
-        rating: 3,
-        facilities: ['Hot drinks', 'Food', 'Premium wifi'],
-        distance: '100m'
-      },
-      {
-        name: 'Cafe Hero',
-        address: '127 High Street, Reading, RG6 1PS',
-        rating: 2,
-        facilities: ['Hot drinks', 'Food', 'Average wifi'],
-        distance: '200m'
-      },
-      {
-        name: 'The Dive',
-        address: '129 High Street, Reading, RG6 1PS',
-        rating: 1,
-        facilities: ['Hot drinks', 'Poor wifi'],
-        distance: '250m'
+    locations: responseBody
+  });
+};
+
+/** (Private) Helper function to reformat distance to whole meters */
+var _formatDistance = function (distance) {
+  var numDistance, unit;
+  if (distance >= 1000) {
+    // Longer distance, convert to fractional Km (nearest tenth)
+    numDistance = parseFloat(distance / 1000).toFixed(1);
+    unit = " km";
+  } else {
+    // Shorter distance, convert to whole Meters
+    numDistance = parseInt(distance, 10);
+    unit = " m";
+  }
+  return numDistance + unit;
+};
+
+/* GET 'home' page */
+module.exports.homelist = function (req, res) {
+  var path = '/api/locations';
+  var requestOptions = {
+    url : apiOptions.server + path,
+    method: "GET",
+    json: {},
+    qs: {
+      lng: -121.2856105,
+      lat: 38.7499155,
+      maxDistance: 20
+    }
+  };
+  request(requestOptions, function (err, response, body) {
+    if (err) {
+      console.log(err);
+    } else if (response.statusCode === 200) {
+      // Clean up distances before rendering
+      var data = body;
+      for (var i = 0; i < data.length; i++) {
+        data[i].distance = _formatDistance(data[i].distance);
       }
-    ]
+      renderHomepage(req, res, data);
+      //console.log('API request result: ', body);
+    } else {
+      console.log(response.statusCode);
+    }
   });
 };
 
