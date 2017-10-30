@@ -62,7 +62,7 @@ module.exports.locationsListByDistance = function (req, res) {
   var lat = parseFloat(req.query.lat);
   var maxKm = (req.query.maxKm) ? parseFloat(req.query.maxKm) : 20.0;
 
-   if (!lng || !lat) {
+   if ((!lng && lng !== 0) || (!lat && lat !== 0)) {
     sendJsonResponse(res, 404, {"message": "Either Lat or Lng missing from query"});
     return;
   }
