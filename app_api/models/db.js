@@ -1,6 +1,17 @@
 var mongoose = require('mongoose');
 
-var dbURI = 'mongodb://localhost/Loc8r';
+var getDbUri = function () {
+  console.log('argv ' + process.argv);
+  switch (process.argv[3]) {
+    case 'docker':
+      return 'mongodb://172.17.0.2/Loc8r'; // running in docker network
+    default:
+      return 'mongodb://localhost/Loc8r';  // running natively
+  }
+}
+
+//var dbURI = 'mongodb://localhost/Loc8r';
+var dbURI = getDbUri();
 mongoose.connect(dbURI);
 
 mongoose.connection.on('connected', function () {

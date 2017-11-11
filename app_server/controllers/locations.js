@@ -78,70 +78,65 @@ module.exports.homelist = function (req, res) {
   });
 };
 
-/* GET 'location info' page */
-module.exports.locationInfo = function (req, res) {
+/** Helper method for rendering the details page */
+var renderDetails = function (req, res, locDetail) {
+  console.log("Detail LAT:", locDetail.coordinates.lat);
+  console.log("Detail LON:", locDetail.coordinates.lon);
   res.render('location-info', {
-    title: 'Location Info for Starcups',
+    title: locDetail.name,
+    pageHeader: {title: locDetail.name},
     sidebar: {
       context: " is on Loc8r because it has accessible wifi and space to sit down with your laptop and get some work done.",
       callToAction: "If you've been and you like it - or if you don't - please leave a review to help others."
     },
-    location: {
-      name: 'Starcups',
-      address: '125 High Street, Reading, RG6 1PS',
-      rating: 3,
-      facilities: [
-        'Hot drinks', 
-        'Food', 
-        'Premium wifi'
-      ],
-      distance: '100m',
-      coordinates:
-      {
-        lat: "51.4388913",
-        lon: "-1.0712056"
-      },
-      hours: [
-        {
-          fromDay: "Monday",
-          toDay: "",
-          open: "",
-          close: ""
-        },
-        {
-          fromDay: "Tuesday",
-          toDay: "Friday",
-          open: "7:00am",
-          close: "7:00pm"
-        },
-        {
-          fromDay: "Saturday",
-          toDay: "",
-          open: "8:00am",
-          close: "3:00pm"
-        },
-        {
-          fromDay: "Sunday",
-          toDay: "",
-          open: "",
-          close: ""
-        }
-      ],
-      reviews: [
-        {
-          author: "Simon Holmes",
-          rating: 3,
-          date: "16 October 2014",
-          text: "What a great place. I can't say enough good tings about it."
-        },
-        {
-          author: "Barney Rubble",
-          rating: 2,
-          date: "15 July 2015",
-          text: "It was okay. Coffee was luke warm, but the wifi was fast."
-        }
-      ]
+    location: locDetail
+  });
+};
+
+/** (Private) helper function to display an error */
+var _showError = function (req, res, status) {
+  var title, content;
+  if (status === 404) {
+    title = "404, page not found";
+    content = "Oh dear, it looks like we can't find this page. Sorry.";
+  } else {
+    title = status + ", something's gone wrong";
+    content = "Something, somewhere has gone a bit wrong. Sorry.";
+  }
+  res.status(status);
+  res.render('generic-text', {
+    title: title,
+    content: content
+  });
+};
+
+/* GET 'location info' page */
+module.exports.locationInfo = function (req, res) {
+  var path = "/api/locations/" + req.params.locationid;
+  var requestOptions = {
+    url: apiOptions.server + path,
+    method: "GET",
+    json: {}
+  };
+  console.log("Details request:", requestOptions);
+  request(requestOptions, function (err, response, body) {
+    if (err) {
+      console.log("Detail error:", err);
+      return;
+    } 
+    if (response.statusCode !== 200) {
+      //console.log("Detail status code:", response.statusCode);
+      //return;
+      _showError(req, res, response.statusCode);
     }
+    // remap coordinates from array of numbers to {lng,lat}
+    var data = body;
+    data.coordinates = {
+      lon: body.coords[0],
+      lat: body.coords[1]
+    };
+    console.log("Detail data:",data);
+    renderDetails(req, res, data);
   });
 };
 
