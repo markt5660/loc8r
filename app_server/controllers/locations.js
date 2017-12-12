@@ -8,6 +8,39 @@ if (process.env.NODE_ENV === 'production') {
   apiOptions.server = "https://getting-mean-loc8r.herokuapp.com";
 };
 
+/** (Private) Helper function to reformat distance to whole meters */
+var _formatDistance = function (distance) {
+  var numDistance, unit;
+  if (distance >= 1000) {
+    // Longer distance, convert to fractional Km (nearest tenth)
+    numDistance = parseFloat(distance / 1000).toFixed(1);
+    unit = " km";
+  } else {
+    // Shorter distance, convert to whole Meters
+    numDistance = parseInt(distance, 10);
+    unit = " m";
+  }
+  return numDistance + unit;
+};
+
+/** (Private) helper function to display an error */
+var _showError = function (req, res, status) {
+  var title, content;
+  if (status === 404) {
+    title = "404, page not found";
+    content = "Oh dear, it looks like we can't find this page. Sorry.";
+  } else {
+    title = status + ", something's gone wrong";
+    content = "Something, somewhere has gone a bit wrong. Sorry.";
+  }
+  res.status(status);
+  res.render('generic-text', {
+    title: title,
+    content: content
+  });
+};
+
+
 /** Helper method for rendering the homepage */
 var renderHomepage = function (req, res, responseBody) {
   var message;
@@ -28,21 +61,6 @@ var renderHomepage = function (req, res, responseBody) {
     locations: responseBody,
     message: message
   });
-};
-
-/** (Private) Helper function to reformat distance to whole meters */
-var _formatDistance = function (distance) {
-  var numDistance, unit;
-  if (distance >= 1000) {
-    // Longer distance, convert to fractional Km (nearest tenth)
-    numDistance = parseFloat(distance / 1000).toFixed(1);
-    unit = " km";
-  } else {
-    // Shorter distance, convert to whole Meters
-    numDistance = parseInt(distance, 10);
-    unit = " m";
-  }
-  return numDistance + unit;
 };
 
 /* GET 'home' page */
@@ -78,10 +96,33 @@ module.exports.homelist = function (req, res) {
   });
 };
 
+/** Helper method for retrieving location info */
+var getLocationInfo = function (req, res, callback) {
+  var requestOptions, path;
+  path = "/api/locations/" + req.params.locationid;
+  requestOptions = {
+    url : apiOptions.server + path,
+    method : "GET",
+    json : {}
+  };
+  request(requestOptions, function (err, response, body) {
+    var data = body;
+	if (response.statusCode === 200) {
+      data.coordinates = {
+        lng : body.coords[0],
+        lat : body.coords[1]
+      };
+      callback(req, res, data);
+	} else {
+	  _showError(req, res, response.statusCode);
+	}
+  });
+};
+
 /** Helper method for rendering the details page */
 var renderDetails = function (req, res, locDetail) {
   console.log("Detail LAT:", locDetail.coordinates.lat);
-  console.log("Detail LON:", locDetail.coordinates.lon);
+  console.log("Detail LON:", locDetail.coordinates.lng);
   res.render('location-info', {
     title: locDetail.name,
     pageHeader: {title: locDetail.name},
@@ -93,59 +134,29 @@ var renderDetails = function (req, res, locDetail) {
   });
 };
 
-/** (Private) helper function to display an error */
-var _showError = function (req, res, status) {
-  var title, content;
-  if (status === 404) {
-    title = "404, page not found";
-    content = "Oh dear, it looks like we can't find this page. Sorry.";
-  } else {
-    title = status + ", something's gone wrong";
-    content = "Something, somewhere has gone a bit wrong. Sorry.";
-  }
-  res.status(status);
-  res.render('generic-text', {
-    title: title,
-    content: content
+/* GET 'location info' page */
+module.exports.locationInfo = function (req, res) {
+  getLocationInfo(req, res, function(req, res, responseData) {
+	  renderDetails(req, res, responseData);
   });
 };
 
-/* GET 'location info' page */
-module.exports.locationInfo = function (req, res) {
-  var path = "/api/locations/" + req.params.locationid;
-  var requestOptions = {
-    url: apiOptions.server + path,
-    method: "GET",
-    json: {}
-  };
-  console.log("Details request:", requestOptions);
-  request(requestOptions, function (err, response, body) {
-    if (err) {
-      console.log("Detail error:", err);
-      return;
-    } 
-    if (response.statusCode !== 200) {
-      //console.log("Detail status code:", response.statusCode);
-      //return;
-      _showError(req, res, response.statusCode);
-    }
-    // remap coordinates from array of numbers to {lng,lat}
-    var data = body;
-    data.coordinates = {
-      lon: body.coords[0],
-      lat: body.coords[1]
-    };
-    console.log("Detail data:",data);
-    renderDetails(req, res, data);
+/** Helper method for rendering the review form */
+var renderReviewForm = function (req, res, locDetail) {
+  res.render('location-review-form', {
+    title: 'Review ' + locDetail.name + ' on Loc8r',
+    pageHeader: { title: 'Review ' + locDetail.name },
+    location: locDetail
   });
 };
 
 /* GET 'add review' page */
 module.exports.addReview = function (req, res) {
-  res.render('location-review-form', {
-    title: 'Review Starcups on Loc8r',
-    location: {
-      name: "Starcups"
-    }
+  getLocationInfo(req, res, function (req, res, responseData) {
+    renderReviewForm(req, res, responseData);
   });
+};
+
+/* POST 'add review' page */
+module.exports.doAddReview = function (req, res) {
 };
