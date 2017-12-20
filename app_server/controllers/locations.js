@@ -98,9 +98,8 @@ module.exports.homelist = function (req, res) {
 
 /** Helper method for retrieving location info */
 var getLocationInfo = function (req, res, callback) {
-  var requestOptions, path;
-  path = "/api/locations/" + req.params.locationid;
-  requestOptions = {
+  var path = "/api/locations/" + req.params.locationid;
+  var requestOptions = {
     url : apiOptions.server + path,
     method : "GET",
     json : {}
@@ -159,4 +158,23 @@ module.exports.addReview = function (req, res) {
 
 /* POST 'add review' page */
 module.exports.doAddReview = function (req, res) {
+  var locationid = req.params.locationid;
+  var path = "/api/locations/" + locationid + "/reviews";
+  var postdata = {
+    author: req.body.name,
+	rating: parseInt(req.body.rating, 10),
+	reviewText: req.body.review
+  };
+  var requestOptions = {
+    url: apiOptions.server + path,
+	method: "POST",
+	json: postdata
+  };
+  request(requestOptions, function (err, response, body) {
+    if (response.statusCode === 201) {
+      res.redirect('/location/' + locationid);
+    } else {
+      _showError(req, res, response.statusCode);
+    }
+  });
 };
