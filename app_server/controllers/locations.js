@@ -1,3 +1,4 @@
+
 var request = require('request');
 // Set default URL base for API requests
 var apiOptions = {
@@ -145,7 +146,8 @@ var renderReviewForm = function (req, res, locDetail) {
   res.render('location-review-form', {
     title: 'Review ' + locDetail.name + ' on Loc8r',
     pageHeader: { title: 'Review ' + locDetail.name },
-    location: locDetail
+    location: locDetail,
+	error: req.query.err
   });
 };
 
@@ -159,7 +161,7 @@ module.exports.addReview = function (req, res) {
 /* POST 'add review' page */
 module.exports.doAddReview = function (req, res) {
   var locationid = req.params.locationid;
-  var path = "/api/locations/" + locationid + "/reviews";
+  var path = '/api/locations/' + locationid + '/reviews';
   var postdata = {
     author: req.body.name,
 	rating: parseInt(req.body.rating, 10),
@@ -170,11 +172,19 @@ module.exports.doAddReview = function (req, res) {
 	method: "POST",
 	json: postdata
   };
-  request(requestOptions, function (err, response, body) {
-    if (response.statusCode === 201) {
-      res.redirect('/location/' + locationid);
-    } else {
-      _showError(req, res, response.statusCode);
-    }
-  });
+  if (!postdata.author || !postdata.rating || !postdata.reviewText) {
+    res.redirect('/location/' + locationid + '/review/new?err=val');
+  } else {
+    request(requestOptions, function (err, response, body) {
+      if (response.statusCode === 201) {
+        res.redirect('/location/' + locationid);
+      } else if (response.statusCode === 400 
+             && body.name 
+             && body.name === "ValidationError") {
+        res.redirect('/location/' + locationid + '/review/new?err=val');
+      } else {
+        _showError(req, res, response.statusCode);
+      }
+    });
+  }
 };
