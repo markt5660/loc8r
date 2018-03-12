@@ -25,13 +25,13 @@ var locationListCtrl = function ($scope, loc8rData, geolocation) {
   };
 
   $scope.showError = function (error) {
-    $scope.apply(function () {
+    $scope.$apply(function () {
       $scope.message = error.message;
     });
   };
 
   $scope.noGeo = function () {
-    $scope.apply(function () {
+    $scope.$apply(function () {
       $scope.message = "Geolocation not supported by this browser";
     });
   };
@@ -90,7 +90,7 @@ var loc8rData = function ($http) {
 /** Service to retrieve the browser's current location */
 var geolocation = function () {
   return {
-    getPosition: function (cbSuccess, cbError, cvNoGeo) {
+    getPosition: function (cbSuccess, cbError, cbNoGeo) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(cbSuccess, cbError);
       } else {
