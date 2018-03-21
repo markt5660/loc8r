@@ -8,14 +8,18 @@ angular
 loc8rData.$inject = ['$http'];
 function loc8rData ($http) {
   return {
-	// Retrieve locations by latitude, longitude, and radius
+    // Retrieve locations by latitude, longitude, and radius
     locationByCoords: function (lat, lng) {
       return $http.get('/api/locations?lng=' + lng + '&lat=' + lat + '&maxDistance=20');
     },
-	// Retrieve location by unique ID
-	locationById: function (locationid) {
+    // Retrieve location by unique ID
+    locationById: function (locationid) {
       return $http.get('/api/locations/' + locationid);
-	}
+    },
+    // Add a review to a location
+    addReviewById: function (locationid, data) {
+      return $http.post('/api/locations/' + locationid + '/reviews', data);
+    }
   };
 };
 

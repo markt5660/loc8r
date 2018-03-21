@@ -1,7 +1,11 @@
 (function () {
 
 // Application dependencies
-angular.module('loc8rApp', ['ngRoute', 'ngSanitize']);
+angular.module('loc8rApp', [
+  'ngRoute', 
+  'ngSanitize',
+  'ui.bootstrap'
+]);
 
 // Router configuration
 function config ($routeProvider, $locationProvider) {

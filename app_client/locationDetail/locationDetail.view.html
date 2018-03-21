@@ -48,7 +48,7 @@
         <div class="col-xs-12">
           <div class="panel panel-primary review-panel">
             <div class="panel-heading">
-              <a class="btn btn-default pull-right" href="">Add review</a>
+              <a class="btn btn-default pull-right" ng-click="vm.popupReviewForm()">Add review</a>
               <h2 class="panel-title">Customer reviews</h2>
             </div>
             <div class="panel-body review-container">
@@ -60,7 +60,7 @@
                     <small class="reviewTimestamp">{{ review.createdOn | date : 'd MMMM yyyy'}}</small>
                   </div>
                   <div class="col-xs-12">
-                    <p ng-bind-html="review.reviewText | addHtmlLineBreaks"></p>
+                    <p ng-bind-html="review.text | addHtmlLineBreaks"></p>
                   </div>
                 </div>
               </div>
