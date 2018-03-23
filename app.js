@@ -1,15 +1,20 @@
+require('dotenv').load();
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-require('./app_api/models/db');
 var uglifyJs = require("uglify-js2");
 var fs = require('fs');
+var passport = require('passport');
+
+require('./app_api/models/db');
+require('./app_api/config/passport');
 
 var index = require('./app_server/routes/index');
-var users = require('./app_server/routes/users');
+//var users = require('./app_server/routes/users');
 var routesApi = require('./app_api/routes/index');
 
 var app = express();
@@ -54,9 +59,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'app_client')));
-
+app.use(passport.initialize());
 //app.use('/', index);
-app.use('/users', users);
+//app.use('/users', users);
 app.use('/api', routesApi);
 
 app.use(function (req, res) {
@@ -70,7 +75,18 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-// error handler
+// error handlers
+
+// authentication failure
+app.use(function(err, req, res, next) {
+  console.log('ErrorHandler: ' + err);
+  if (err.name === 'UnauthorizedError') {
+    res.status(401);
+	res.json({ "message" : err.name + ": " + err.message });
+  }
+});
+
+// other error(s)
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;

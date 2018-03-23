@@ -11,30 +11,55 @@ var sendJsonResponse = function (res, status, content) {
 
 /* POST */
 module.exports.reviewsCreate = function (req, res) {
-  var locationId = req.params.locationid;
-  if (locationId) {
-    Loc
-      .findById(locationId)
-      .select('reviews')
-      .exec(function (err, location) {
-        if (err) {
-          sendJsonResponse(res, 400, err);
-        } else {
-          doAddReview(req, res, location);
-        }
-      });
-  } else {
-    sendJsonResponse(res, 404, {"message": "Not found, locationId required"});
+  getAuthor(req, res, function (req, res, username) {
+    if (req.params.locationid) {
+      Loc
+        .findById(req.params.locationid)
+        .select('reviews')
+        .exec(function (err, location) {
+          if (err) {
+            sendJsonResponse(res, 400, err);
+          } else {
+            doAddReview(req, res, location, username);
+          }
+        });
+    } else {
+      sendJsonResponse(res, 404, {"message": "Not found, locationId required"});
+    }
+  });
+};
+
+/** Helper function to retrieve the name of the authenticated user */
+var User = mongoose.model('User');
+var getAuthor = function (req, res, callback) {
+  if (!req.payload || !req.payload.email) {
+    sendJsonResponse(res, 404, {"message": "User not found"});
+	return;
   }
+
+  User
+    .findOne({ email : req.payload.email })
+    .exec(function (err, user){
+      if (!user) {
+        sendJsonResponse(res, 404, {"message": "User not found"});
+		return;
+      }
+      if (err) {
+        console.log(err);
+        sendJsonResponse(res, 404, err);
+		return;
+	  }
+	  callback(req, res, user.name);
+	});
 };
 
 /** Helper function for adding a review */
-var doAddReview = function (req, res, location) {
+var doAddReview = function (req, res, location, author) {
   if (!location) {
     sendJsonResponse(res, 404, {"message": "locationId not found"});
   } else {
     location.reviews.push({
-      author: req.body.author,
+      author: author,
       rating: req.body.rating,
       text: req.body.reviewText
     });

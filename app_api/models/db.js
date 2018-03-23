@@ -60,3 +60,4 @@ process.once('SIGTERM', function () {
 * Data model
 */
 require('./locations');
+require('./users');
