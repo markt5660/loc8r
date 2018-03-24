@@ -4,22 +4,22 @@ angular
   .module('loc8rApp')
   .service('authentication', authentication);
 
-authentication.$inject = ['$window'];
-function authentication ($window) {
+authentication.$inject = ['$window','$http'];
+function authentication ($window, $http) {
 
   var saveToken = function (token) {
-    $window.localStorage['loc8r-token'] = token;
+    $window.localStorage.setItem('loc8r-token', token);
   };
 
   var getToken = function () {
-    return $window.localStorage['loc8r-token'];
+    return $window.localStorage.getItem('loc8r-token');
   };
 
   var register = function (user) {
     return $http.post('/api/register', user).then(
       function (data) {
         // success
-        saveToken(data.token);
+        saveToken(data.data.token);
       }
     );
   };
@@ -28,7 +28,7 @@ function authentication ($window) {
     return $http.post('/api/login', user).then(
       function (data) {
         // success
-        saveToken(data.token);
+        saveToken(data.data.token);
       }
     );
   };
@@ -39,30 +39,29 @@ function authentication ($window) {
 
   var isLoggedIn = function () {
     var token = getToken();
-
-    if (!token) {
+    if (token) {
+      // Extract the payload and check that it hasn't expired
+      var payload = JSON.parse($window.atob(token.split('.')[1]));
+      return payload.exp > (Date.now() / 1000);
+    } else {
       return false;
     }
-
-    // Extract the payload and check that it hasn't expired
-	var payload = JSON.parse($window.atob(token.split('.')[1]));
-	return payload.exp > (Date.now() / 1000);
   };
 
   var currentUser = function () {
-    if (isLoggedIn) {
+    if (isLoggedIn()) {
       var token = getToken();
       var payload = JSON.parse($window.atob(token.split('.')[1]));
       return {
         email : payload.email,
-		name : payload.name
-      };
+        name : payload.name
+      }
     }
   };
 
   return {
     saveToken : saveToken,
-	getToken : getToken,
+    getToken : getToken,
     register: register,
     login: login,
     logout: logout,

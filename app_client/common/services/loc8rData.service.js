@@ -5,8 +5,8 @@ angular
   .service('loc8rData', loc8rData)
 
 /** Service to retrieve data from loc8r REST API */
-loc8rData.$inject = ['$http'];
-function loc8rData ($http) {
+loc8rData.$inject = ['$http', 'authentication'];
+function loc8rData ($http, authentication) {
   return {
     // Retrieve locations by latitude, longitude, and radius
     locationByCoords: function (lat, lng) {
@@ -18,7 +18,11 @@ function loc8rData ($http) {
     },
     // Add a review to a location
     addReviewById: function (locationid, data) {
-      return $http.post('/api/locations/' + locationid + '/reviews', data);
+      return $http.post('/api/locations/' + locationid + '/reviews', data, {
+        headers: {
+          Authorization: 'Bearer ' + authentication.getToken()
+		}
+	  });
     }
   };
 };

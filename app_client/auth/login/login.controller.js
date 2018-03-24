@@ -13,15 +13,15 @@ function loginCtrl ($location, authentication) {
   };
 
   vm.credentials = {
-    email: '',
-    password: ''
+    email: "",
+    password: ""
   };
 
   // Get return page from the query string
   vm.returnPage = $location.search().page || '/';
 
   vm.onSubmit = function () {
-    vm.formError = '';
+    vm.formError = "";
     if (!vm.credentials.email || !vm.credentials.password) {
       vm.formError = 'All fields required, please try again';
       return false;
@@ -30,7 +30,7 @@ function loginCtrl ($location, authentication) {
   };
 
   vm.doLogin = function () {
-    vm.formError = '';
+    vm.formError = "";
 	authentication.login(vm.credentials).then(
       function (data) {
         // success
@@ -39,7 +39,7 @@ function loginCtrl ($location, authentication) {
       },
       function (e) {
         // error
-        vm.formError = e;
+        vm.formError = e.data.message;
       }
     );
   };
